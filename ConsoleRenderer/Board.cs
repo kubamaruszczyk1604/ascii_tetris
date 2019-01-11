@@ -8,17 +8,70 @@ namespace ConsoleRenderer
 {
     class Board
     {
+        public delegate void OnLinesCompleted(int lineCount);
+        private OnLinesCompleted m_OnLinesCompleted;
+
+        public delegate void OnDeletingLine();
+        private OnDeletingLine m_OnDeletingLine;
 
         private int m_SizeX;
         private int m_SizeY;
         private int[,] m_States;
         private List<Cell> m_Cells;
+        private DateTime m_NextDrop;
+
+        /******************** Private Methods *******************/
+
+        private void DeleteRow(int rowNo)
+        {
+            InvokeOnDeletingLine();
+            for (int j = 0; j < m_SizeX; ++j)
+            {
+                m_Cells.RemoveAll(o => o.Y == rowNo && o.X == (rowNo%2 == 0? m_SizeX-j:j));
+                
+                BoardRenderer.DrawFrame(Cells);
+                
+            }
+
+            //m_Cells.RemoveAll(o => o.Y == rowNo);
+            for (int i = 0; i < m_SizeX; ++i)
+            {
+                m_States[i, rowNo] = 0;
+            }
+
+            List<Cell> aboveCells = m_Cells.FindAll(o => o.Y < rowNo);
+            foreach (Cell c in aboveCells)
+            {
+                //c.Active = true;
+                // m_States[c.X, c.Y] = m_States[c.X, c.Y - 1];
+                c.MoveTo(c.X, c.Y + 1);
+                // m_States[c.X, c.Y] = c.ID;
+            }
+
+            m_States = new int[m_SizeX, m_SizeY];
+            foreach (Cell c in m_Cells)
+            {
+                m_States[c.X, c.Y] = c.ID;
+            }
+
+        }
+
+        private void InvokeLinesCompleteEvent(int lineCount)
+        {
+            if (m_OnLinesCompleted != null) m_OnLinesCompleted(lineCount);
+        }
+
+        private void InvokeOnDeletingLine()
+        {
+            if (m_OnDeletingLine != null) m_OnDeletingLine();
+        }
+
+        /******************** Public Interface *******************/
 
         public List<Cell> Cells { get { return m_Cells; } }
         public int[,] States { get { return m_States; } }
         public TimeSpan DropRate { get; set; }
 
-        private DateTime m_NextDrop;
 
         public Board(int sizeX, int sizeY)
         {
@@ -32,6 +85,16 @@ namespace ConsoleRenderer
 
         public void Reset()
         {
+            foreach(Delegate d in m_OnLinesCompleted.GetInvocationList())
+            {
+                m_OnLinesCompleted -= (OnLinesCompleted)d;
+            }
+
+            foreach (Delegate d in m_OnDeletingLine.GetInvocationList())
+            {
+                m_OnDeletingLine -= (OnDeletingLine)d;
+            }
+
             m_States = new int[m_SizeX, m_SizeY];
             m_Cells = new List<Cell>();
             DropRate = TimeSpan.FromSeconds(0.5);
@@ -106,67 +169,11 @@ namespace ConsoleRenderer
             return MoveActiveBlockBy(0, 1);
         }
 
-
         public void SetCurrentBlockAsStatic()
         {
             foreach (Cell c in m_Cells)
             {
                 if (c.Active) c.Active = false;
-            }
-        }
-
-        public int DetectAndHandleCopmleteRows()
-        {
-            List<int> fullNumbers = new List<int>();
-            for(int i = 0; i < m_SizeY; ++i)
-            {
-                bool rowFull = true;
-                for(int j = 0; j < m_SizeX;++j)
-                {
-                    if(m_States[j,i] == 0)
-                    {
-                        rowFull = false;
-                        break;
-                    }
-                }
-                if (rowFull)
-                {
-                    
-                    fullNumbers.Add(i);
-                    Console.Beep(900 * fullNumbers.Count, 500);
-
-                }
-            }
-
-            foreach(int i in fullNumbers)
-            {
-                DeleteRow(i);
-            }
-            fullNumbers.Clear();
-            return fullNumbers.Count;
-        }
-
-        private void DeleteRow(int rowNo)
-        {
-            m_Cells.RemoveAll(o => o.Y == rowNo);
-            for (int i = 0; i < m_SizeX; ++i)
-            {
-                m_States[i, rowNo] = 0;
-            }
-
-            List<Cell> aboveCells = m_Cells.FindAll(o => o.Y < rowNo);
-            foreach (Cell c in aboveCells)
-            {
-                //c.Active = true;
-               // m_States[c.X, c.Y] = m_States[c.X, c.Y - 1];
-                c.MoveTo(c.X, c.Y + 1);
-               // m_States[c.X, c.Y] = c.ID;
-            }
-
-            m_States = new int[m_SizeX, m_SizeY];
-            foreach(Cell c in m_Cells)
-            {
-                m_States[c.X, c.Y] = c.ID;
             }
         }
 
@@ -215,6 +222,60 @@ namespace ConsoleRenderer
             return true;
 
 
+        }
+
+        public int DetectAndHandleCopmleteRows()
+        {
+            List<int> fullNumbers = new List<int>();
+            for(int i = 0; i < m_SizeY; ++i)
+            {
+                bool rowFull = true;
+                for(int j = 0; j < m_SizeX;++j)
+                {
+                    if(m_States[j,i] == 0)
+                    {
+                        rowFull = false;
+                        break;
+                    }
+                }
+                if (rowFull)
+                {
+                    
+                    fullNumbers.Add(i);
+                    //Console.Beep(900 * fullNumbers.Count, 500);
+                   
+
+                }
+            }
+
+            foreach(int i in fullNumbers)
+            {
+                DeleteRow(i);
+            }
+            if (fullNumbers.Count > 0)
+            { InvokeLinesCompleteEvent(fullNumbers.Count); }
+            //fullNumbers.Clear();
+            return fullNumbers.Count;
+        }
+
+        public void Subscribe_OnLineCompleted(OnLinesCompleted listener)
+        {
+            m_OnLinesCompleted += listener;
+        }
+
+        public void Unsubscribe_OnLineCompleted(OnLinesCompleted listener)
+        {
+            m_OnLinesCompleted -= listener;
+        }
+
+        public void Subscribe_OnDeletingLine(OnDeletingLine listener)
+        {
+            m_OnDeletingLine += listener;
+        }
+
+        public void Unsubscribe_OnDeletingLine(OnDeletingLine listener)
+        {
+            m_OnDeletingLine -= listener;
         }
     }
 }

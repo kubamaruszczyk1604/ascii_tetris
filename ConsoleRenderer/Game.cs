@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Threading;
+
 namespace ConsoleRenderer
 {
    
@@ -33,7 +34,6 @@ namespace ConsoleRenderer
         static int[] COL_TABLE =
        {
             ColourBase.BACKGROUND_BLUE | ColourBase.FOREGROUND_RED,
-           // ColourBase.BACKGROUND_BLUE | ColourBase.FOREGROUND_WHITE//,
            ColourBase.BACKGROUND_BLUE, 
            ColourBase.BACKGROUND_BLUE | ColourBase.FOREGROUND_BLUE,
             ColourBase.BACKGROUND_RED | ColourBase.FOREGROUND_BLUE//,
@@ -48,9 +48,27 @@ namespace ConsoleRenderer
         static bool s_Running = false;
         static Queue<BlockType> s_NextBlocks = new Queue<BlockType>();
 
+        /******************** Private Methods *******************/
+
         private static int GenRandomColour()
         {
             return COL_TABLE[s_Random.Next(0, COL_TABLE.Length)];
+        }
+
+        private static void GeneratePutSound()
+        {
+            Console.Beep(200, 5);
+        }
+
+        private static void GenerateRowSound()
+        {
+            //int[] frequencies = { 523, 587, 659, 698, 783 };
+            //in C major scale
+            int[] frequencies = { 523, 659, 783, 659, 698, 783 };
+            for (int i = 0; i < frequencies.Length; ++i)
+            {
+                Console.Beep(frequencies[i], 50); 
+            }
         }
 
         private static bool CreateBlock(int id, BlockType type, out Cell pivotCell)
@@ -107,8 +125,6 @@ namespace ConsoleRenderer
             }
             return false;
         }
-
-
 
         private static void DrawNextBlockPreview(int x, int y, BlockType type)
         {
@@ -231,6 +247,22 @@ namespace ConsoleRenderer
             s_Running = false;
         }
 
+        private static void OnLineCompleted(int lines)
+        {
+
+           
+            //Console.Beep(900 , 100);
+        }
+
+        private static void OnDeletingLine()
+        {
+            // Console.Beep(1000 +190*block, 20);
+            Thread t = new Thread(GenerateRowSound);
+            t.Start();
+        }
+
+        /******************** Public Interface *******************/
+
         public static void ShowIntroScreen()
         {
             Console.SetWindowSize(144, 30 + 4);
@@ -249,6 +281,7 @@ namespace ConsoleRenderer
 
         public static void InitializeGame()
         {
+            OnDeletingLine();
             Console.SetWindowSize(100, 30 + 5);
 
             Console.BackgroundColor = ConsoleColor.DarkRed;
@@ -264,9 +297,9 @@ namespace ConsoleRenderer
             Console.CursorVisible = false;
             InputEventGenerator.ev_KeyPressed += OnKeyPressed;
             InputEventGenerator.Start();
-            
+            s_Board.Subscribe_OnLineCompleted(OnLineCompleted);
+            s_Board.Subscribe_OnDeletingLine(OnDeletingLine);
         }
-
 
         public static void ShutDown()
         {
@@ -302,7 +335,7 @@ namespace ConsoleRenderer
                     s_Board.SetCurrentBlockAsStatic();
                     BlockType nextBlock = s_NextBlocks.Dequeue();
                     s_NextBlocks.Enqueue(GenerateRandomBlock());
-                    Console.Beep(2000, 20);
+                    GeneratePutSound();
                     s_Board.DetectAndHandleCopmleteRows();
                     blockID++;
                     if(!CreateBlock(blockID, nextBlock, out pivot))
@@ -332,7 +365,7 @@ namespace ConsoleRenderer
                         s_Board.SetCurrentBlockAsStatic();
                         BlockType nextBlock = s_NextBlocks.Dequeue();
                         s_NextBlocks.Enqueue(GenerateRandomBlock());
-                        Console.Beep(2000, 20);
+                        GeneratePutSound();
                         s_Board.DetectAndHandleCopmleteRows();
                         blockID++;
                         if (!CreateBlock(blockID, nextBlock, out pivot))

@@ -103,6 +103,8 @@ namespace ConsoleRenderer
         static public void Clear()
         {
             Array.Clear(buf, 0, buf.Length);
+            for(int i = 0; i < buf.Length; ++i)
+            AddSequentialy((char)176, 0x0007);
         }
 
         static public void DrawXY(char c, short color, int x, int y)

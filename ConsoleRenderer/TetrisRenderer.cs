@@ -18,7 +18,7 @@ namespace ConsoleRenderer
 
         public static void Initialize(short x, short y, short width, short height)
         {
-            DrawWindow(x-2, y-1, width+4, height+2, "BOARD", ConsoleColor.DarkGray, ConsoleColor.White);
+            DrawWindow(x-2, y-1, width+4, height+2, "BOARD", ConsoleColor.Black, ConsoleColor.White);
             Buffer.Initialize(x,y,width, height);
         }
 
