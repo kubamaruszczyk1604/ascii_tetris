@@ -70,7 +70,7 @@ namespace ConsoleRenderer
 
         public List<Cell> Cells { get { return m_Cells; } }
         public int[,] States { get { return m_States; } }
-        public TimeSpan DropRate { get; set; }
+        private float m_DropRate;
 
 
         public Board(int sizeX, int sizeY)
@@ -79,26 +79,32 @@ namespace ConsoleRenderer
             m_SizeY = sizeY;
             m_States = new int[sizeX, sizeY];
             m_Cells = new List<Cell>();
-            DropRate = TimeSpan.FromSeconds(0.5);
+            m_DropRate = 0.5f;
             m_NextDrop = DateTime.Now;
         }
 
         public void Reset()
         {
-            foreach(Delegate d in m_OnLinesCompleted.GetInvocationList())
+            if (m_OnLinesCompleted != null)
             {
-                m_OnLinesCompleted -= (OnLinesCompleted)d;
+                foreach (Delegate d in m_OnLinesCompleted.GetInvocationList())
+                {
+                    m_OnLinesCompleted -= (OnLinesCompleted)d;
+                }
             }
-
-            foreach (Delegate d in m_OnDeletingLine.GetInvocationList())
+            if (m_OnDeletingLine != null)
             {
-                m_OnDeletingLine -= (OnDeletingLine)d;
+                foreach (Delegate d in m_OnDeletingLine.GetInvocationList())
+                {
+                    m_OnDeletingLine -= (OnDeletingLine)d;
+                }
             }
 
             m_States = new int[m_SizeX, m_SizeY];
             m_Cells = new List<Cell>();
-            DropRate = TimeSpan.FromSeconds(0.5);
+            m_DropRate = 0.5f;
             m_NextDrop = DateTime.Now;
+        
         }
 
         public Cell AddCell(int x, int y, int id,int col)
@@ -158,15 +164,22 @@ namespace ConsoleRenderer
         {
             if (m_NextDrop <= DateTime.Now)
             {
-                m_NextDrop = DateTime.Now + DropRate;
+                m_NextDrop = DateTime.Now + TimeSpan.FromSeconds(m_DropRate);
                 return MoveActiveBlockBy(0, 1);
             }
             return true;
         }
 
+        public void SetDropRate(int level)
+        {
+            m_DropRate = 1.0f/level * 0.5f;
+        }
+
         public bool MoveCurrentBlockDownFast()
         { 
+        
             return MoveActiveBlockBy(0, 1);
+          
         }
 
         public void SetCurrentBlockAsStatic()

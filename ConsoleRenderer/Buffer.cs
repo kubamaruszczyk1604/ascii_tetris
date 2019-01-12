@@ -2,7 +2,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-
+using System.Text;
 
 namespace ConsoleRenderer
 {
@@ -100,13 +100,56 @@ namespace ConsoleRenderer
 
         }
 
+        static public void ClearA(string [] bkg)
+        {
+            bool addingStr = false;
+            int ind = 0;
+            int indc = 0;
+            var e = Encoding.GetEncoding("437");
+            Array.Clear(buf, 0, buf.Length);
+            for (int i = 0; i < buf.Length; ++i)
+            {
+                if (i % (m_sWidth) == 0)
+                {
+                    addingStr = true;
+                    ind++;
+                    if (ind >= bkg.Length) addingStr = false;
+                    indc = 0;
+                    AddSequentialy((char)176, 0x0007);
+                }
+                else
+                {
+                    if(addingStr)
+                    {
+                        if (indc >= bkg[ind].Length - 1)
+                        {
+                            addingStr = false;
+                            AddSequentialy((char)176, 0x0007);
+                        }
+                        else
+                        {
+                            char c = bkg[ind][indc];
+                            byte[] charByte = e.GetBytes(c.ToString());
+                            indc++;
+                            byte f = charByte[0];
+                            if (f == 32) f = 176;
+                            AddSequentialy((char)f, 0x0007);
+                            
+
+                        }
+                    }
+                    else AddSequentialy((char)176, 0x0007);
+                }
+            }
+        }
         static public void Clear()
         {
             Array.Clear(buf, 0, buf.Length);
-            for(int i = 0; i < buf.Length; ++i)
-            AddSequentialy((char)176, 0x0007);
+            for (int i = 0; i < buf.Length; ++i)
+            {
+              AddSequentialy((char)176, 0x0007);
+            }
         }
-
         static public void DrawXY(char c, short color, int x, int y)
         {
             int index = m_sWidth * (y) + x;

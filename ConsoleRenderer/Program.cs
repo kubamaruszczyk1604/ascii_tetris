@@ -14,11 +14,12 @@ namespace ConsoleRenderer
        
         static void Main(string[] args)
         {
-          
+
             Game.ShowIntroScreen();
             Game.InitializeGame();
-            Game.Run();
-            Game.ShutDown();
+             Game.Run();
+             Game.ShutDown();
+
 
         }
     }

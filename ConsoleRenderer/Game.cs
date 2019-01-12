@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace ConsoleRenderer
 {
-   
+    //htp://patorjk.com/software/taag/#p=display&f=Graffiti&t=Type%20Something%20
     enum BlockType
     {
         Long = 0, Square = 1, LShapedL = 2, LShapedR = 3,
@@ -19,18 +19,7 @@ namespace ConsoleRenderer
    
     class Game
     {
-        //static int[] COL_TABLE =
-        //{
-        //    ColourBase.BACKGROUND_BLUE | ColourBase.FOREGROUND_YELLOW,
-        //    ColourBase.BACKGROUND_BLUE | ColourBase.FOREGROUND_RED,
-        //    ColourBase.BACKGROUND_BLUE | ColourBase.FOREGROUND_WHITE,
-        //    ColourBase.BACKGROUND_BLUE | ColourBase.FOREGROUND_INTENSITY,
-        //    ColourBase.BACKGROUND_BLUE | ColourBase.FOREGROUND_GREEN,
-        //    ColourBase.BACKGROUND_YELLOW | ColourBase.FOREGROUND_BLUE,
-        //    ColourBase.BACKGROUND_RED | ColourBase.FOREGROUND_BLUE,
-        //    ColourBase.BACKGROUND_GREEN | ColourBase.FOREGROUND_BLUE
 
-        //};
         static int[] COL_TABLE =
        {
             ColourBase.BACKGROUND_BLUE | ColourBase.FOREGROUND_RED,
@@ -42,11 +31,12 @@ namespace ConsoleRenderer
         const int c_SizeX = 24;
         const int c_SizeY = 30;
 
-        static Board s_Board = new Board(c_SizeX, c_SizeY);
+        static Board s_Board;
         static ActionType s_RequestedAction = ActionType.NoAction;
-        static Random s_Random = new Random();
+        static Random s_Random;
         static bool s_Running = false;
-        static Queue<BlockType> s_NextBlocks = new Queue<BlockType>();
+        static Queue<BlockType> s_NextBlocks;
+        static ScoreManager m_ScoreManager;
 
         /******************** Private Methods *******************/
 
@@ -159,6 +149,8 @@ namespace ConsoleRenderer
                 Console.WriteLine("▒▒");
                 Console.SetCursorPosition(x + 2, y + 2);
                 Console.WriteLine("▒▒▒▒");
+               // char c = '▒';
+                //byte cr = (byte)(c);
             }
             else if (type == BlockType.Piramid)
             {
@@ -171,11 +163,11 @@ namespace ConsoleRenderer
             else if (type == BlockType.SShapedL)
             {
                 y += 1;
-                Console.SetCursorPosition(x + 2, y);
+                Console.SetCursorPosition(x + 4, y);
                 Console.WriteLine("▒▒");
                 Console.SetCursorPosition(x + 2, y + 1);
                 Console.WriteLine("▒▒▒▒");
-                Console.SetCursorPosition(x + 4, y + 2);
+                Console.SetCursorPosition(x + 2, y + 2);
                 Console.WriteLine("▒▒");
             }
             else if (type == BlockType.SShapedR)
@@ -199,21 +191,23 @@ namespace ConsoleRenderer
             Console.ForegroundColor = ConsoleColor.Red;
         }
 
-        private static void DrawStatsBoard(int x, int y, int score, int bestScore, int level)
+        private static void DrawStatsBoard(int x, int y, int score, int newGoal, int level)
         {
             BoardRenderer.DrawWindow(x, y, 40, 17, "STATS", ConsoleColor.DarkRed, ConsoleColor.Black);
            // DrawStatsBoard(58, 18, 20, 21, 3);
             x += 2;
             y += 2;
-            BoardRenderer.DrawWindow(x, y, 11, 3, "Level", ConsoleColor.DarkRed, ConsoleColor.Gray);
+            BoardRenderer.DrawWindow(x, y, 11, 4, "Level", ConsoleColor.DarkRed, ConsoleColor.Gray);
             Console.SetCursorPosition(x + 4, y + 1);
-            Console.Write(new string('0', 3 - score.ToString().Length) + level.ToString());
-            
+            Console.Write("L " + level.ToString());
+            Console.SetCursorPosition(x + 4, y + 2);
+            Console.Write(m_ScoreManager.LevelProgressPercent.ToString() + " %");
+            //Console.Write(level.ToString());
             BoardRenderer.DrawWindow(x+13,  y, 23, 4, "Score", ConsoleColor.DarkRed, ConsoleColor.Gray);
             Console.SetCursorPosition(x + 16, y + 1);
             Console.Write(" Your: " + new string(' ',9 - score.ToString().Length) + score.ToString());
             Console.SetCursorPosition(x + 16, y + 2);
-            Console.Write(" Best: " + new string(' ', 9 - bestScore.ToString().Length) + bestScore.ToString());
+            Console.Write(" Next Lev: " + new string(' ', 5 - newGoal.ToString().Length) + newGoal.ToString());
 
         }
 
@@ -250,15 +244,19 @@ namespace ConsoleRenderer
         private static void OnLineCompleted(int lines)
         {
 
-           
+            m_ScoreManager.AddScore(lines);
             //Console.Beep(900 , 100);
         }
 
         private static void OnDeletingLine()
         {
-            // Console.Beep(1000 +190*block, 20);
             Thread t = new Thread(GenerateRowSound);
             t.Start();
+        }
+
+        private static void OnNextLevel(int level)
+        {
+            s_Board.SetDropRate(level);
         }
 
         /******************** Public Interface *******************/
@@ -281,7 +279,10 @@ namespace ConsoleRenderer
 
         public static void InitializeGame()
         {
-            OnDeletingLine();
+            s_Board = new Board(c_SizeX, c_SizeY);
+            s_Random = new Random();
+            s_NextBlocks = new Queue<BlockType>();
+
             Console.SetWindowSize(100, 30 + 5);
 
             Console.BackgroundColor = ConsoleColor.DarkRed;
@@ -293,7 +294,7 @@ namespace ConsoleRenderer
             string s = ASCIIEffects.LoadAsString(@"C:\Users\Kuba\Desktop\at.txt");
             ASCIIEffects.DisplayScreen(s);
             BoardRenderer.Initialize(4, 2, c_SizeX * 2, c_SizeY + 1);
-            DrawStatsBoard(56, 16, 20, 21, 3);
+           // 
             Console.CursorVisible = false;
             InputEventGenerator.ev_KeyPressed += OnKeyPressed;
             InputEventGenerator.Start();
@@ -312,6 +313,8 @@ namespace ConsoleRenderer
             s_Board.Reset();
             s_RequestedAction = ActionType.NoAction;
             s_NextBlocks.Clear();
+            s_Board.Subscribe_OnLineCompleted(OnLineCompleted);
+            s_Board.Subscribe_OnDeletingLine(OnDeletingLine);
         }
 
         public static void Run()
@@ -324,7 +327,9 @@ namespace ConsoleRenderer
             CreateBlock(blockID, s_NextBlocks.Dequeue(), out pivot);
             int prevX = 70;
             int prevY = 26;
-
+            m_ScoreManager = new ScoreManager();
+            m_ScoreManager.Subscribe_OnNextLevel(OnNextLevel);
+            DrawStatsBoard(56, 16, m_ScoreManager.CurrentScore, m_ScoreManager.m_NextLevelTreshold, m_ScoreManager.Level);
             DrawNextBlockPreview(prevX, prevY, s_NextBlocks.Peek());
             while (s_Running)
             {
@@ -342,6 +347,7 @@ namespace ConsoleRenderer
                     {
                         OnGameOver();   
                     }
+                    DrawStatsBoard(56, 16, m_ScoreManager.CurrentScore, m_ScoreManager.m_NextLevelTreshold, m_ScoreManager.Level);
                     DrawNextBlockPreview(prevX, prevY, s_NextBlocks.Peek());
                 }
 
@@ -372,6 +378,7 @@ namespace ConsoleRenderer
                         {
                             OnGameOver();
                         }
+                        DrawStatsBoard(56, 16, m_ScoreManager.CurrentScore, m_ScoreManager.m_NextLevelTreshold, m_ScoreManager.Level);
                         DrawNextBlockPreview(prevX, prevY, s_NextBlocks.Peek());
 
                     }

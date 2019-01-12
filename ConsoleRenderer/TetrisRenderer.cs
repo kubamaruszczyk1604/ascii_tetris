@@ -25,8 +25,9 @@ namespace ConsoleRenderer
         public static void DrawFrame(List<Cell> activeCells)
         {
             Console.SetCursorPosition(0, 0);
+            //Buffer.Clear();
             Buffer.Clear();
-            foreach(Cell c in activeCells)
+            foreach (Cell c in activeCells)
             {
                 DrawSingle(c.X*2, c.Y,(short)c.Colour);
             }
@@ -35,7 +36,21 @@ namespace ConsoleRenderer
             //Console.ReadLine();
 
         }
-    
+        public static void DrawFrame(List<Cell> activeCells, string [] background)
+        {
+            Console.SetCursorPosition(0, 0);
+            Buffer.ClearA(background);
+            foreach (Cell c in activeCells)
+            {
+                DrawSingle(c.X * 2, c.Y, (short)c.Colour);
+            }
+            Buffer.Swap();
+            Thread.Sleep(30);
+            //Console.ReadLine();
+
+        }
+
+
         public static void DrawDebug(int [,] boardStates)
         {
            
