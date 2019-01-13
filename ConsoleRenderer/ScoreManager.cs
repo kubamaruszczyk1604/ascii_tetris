@@ -39,13 +39,13 @@ namespace ConsoleRenderer
             m_Score = 0;
             m_CurrentLevelScore = 0;
             m_Level = 1;
-            m_NextLevelTreshold = 1000;
+            m_NextLevelTreshold = 100;
         }
 
         public int AddScore(int lines)
         {
-            m_Score += (m_Level* lines * lines * c_SingleLineScore);
-            m_CurrentLevelScore += (m_Level * lines * lines * c_SingleLineScore); 
+            m_Score += (lines * lines * c_SingleLineScore);
+            m_CurrentLevelScore += (lines * lines * c_SingleLineScore); 
             if(m_CurrentLevelScore >= m_NextLevelTreshold )
             {
                 m_CurrentLevelScore = 0;

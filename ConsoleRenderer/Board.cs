@@ -11,7 +11,7 @@ namespace ConsoleRenderer
         public delegate void OnLinesCompleted(int lineCount);
         private OnLinesCompleted m_OnLinesCompleted;
 
-        public delegate void OnDeletingLine();
+        public delegate void OnDeletingLine(bool completed);
         private OnDeletingLine m_OnDeletingLine;
 
         private int m_SizeX;
@@ -19,20 +19,35 @@ namespace ConsoleRenderer
         private int[,] m_States;
         private List<Cell> m_Cells;
         private DateTime m_NextDrop;
+       // string [][] strLut = { Strings.x1, Strings.x2, Strings.x3, Strings.x4 };
 
         /******************** Private Methods *******************/
 
-        private void DeleteRow(int rowNo)
+        private void DeleteRow(int rowNo, bool completed)
         {
-            InvokeOnDeletingLine();
-            for (int j = 0; j < m_SizeX; ++j)
+            InvokeOnDeletingLine(completed);
+            if (completed)
             {
-                m_Cells.RemoveAll(o => o.Y == rowNo && o.X == (rowNo%2 == 0? m_SizeX-j:j));
-                
-                BoardRenderer.DrawFrame(Cells);
-                
-            }
+                for (int j = 0; j < m_SizeX; ++j)
+                {
+                    int l = m_Cells.RemoveAll(o => o.Y == rowNo && o.X == (rowNo % 2 == 0 ? m_SizeX - j : j));
 
+                    if (l > 0)
+                        // BoardRenderer.DrawFrame(Cells,strLut[counter]);
+                        BoardRenderer.DrawFrame(Cells);
+                }
+            }
+            else
+            {
+                for (int j = 0; j < m_SizeX; ++j)
+                {
+                    int l = m_Cells.RemoveAll(o => o.Y == rowNo );
+
+                    if (l > 0)
+                        // BoardRenderer.DrawFrame(Cells,strLut[counter]);
+                        BoardRenderer.DrawFrame(Cells);
+                }
+            }
             //m_Cells.RemoveAll(o => o.Y == rowNo);
             for (int i = 0; i < m_SizeX; ++i)
             {
@@ -61,9 +76,9 @@ namespace ConsoleRenderer
             if (m_OnLinesCompleted != null) m_OnLinesCompleted(lineCount);
         }
 
-        private void InvokeOnDeletingLine()
+        private void InvokeOnDeletingLine(bool completed)
         {
-            if (m_OnDeletingLine != null) m_OnDeletingLine();
+            if (m_OnDeletingLine != null) m_OnDeletingLine(completed);
         }
 
         /******************** Public Interface *******************/
@@ -105,6 +120,28 @@ namespace ConsoleRenderer
             m_DropRate = 0.5f;
             m_NextDrop = DateTime.Now;
         
+        }
+
+        public void ClearCells()
+        {
+            for (int i = 0; i < m_SizeY; ++i)
+            {
+                bool rowFull = false;
+                for (int j = 0; j < m_SizeX; ++j)
+                {
+                    if (m_States[j, i] != 0)
+                    {
+                        rowFull = true;
+                        break;
+                    }
+                }
+                if (rowFull)
+                {
+                    DeleteRow(i, false);
+                }
+            }
+            m_Cells.Clear();
+            m_States = new int[m_SizeX, m_SizeY];
         }
 
         public Cell AddCell(int x, int y, int id,int col)
@@ -172,14 +209,14 @@ namespace ConsoleRenderer
 
         public void SetDropRate(int level)
         {
-            m_DropRate = 1.0f/level * 0.5f;
+            m_DropRate = 0.5f - (level * 0.05f);
+            if (m_DropRate < 0) m_DropRate = 0;
+            //m_DropRate = 1.0f/level * 0.5f;
         }
 
         public bool MoveCurrentBlockDownFast()
-        { 
-        
+        {     
             return MoveActiveBlockBy(0, 1);
-          
         }
 
         public void SetCurrentBlockAsStatic()
@@ -260,10 +297,11 @@ namespace ConsoleRenderer
 
                 }
             }
-
+            int cnt = 0;
             foreach(int i in fullNumbers)
             {
-                DeleteRow(i);
+                DeleteRow(i,true);
+                cnt++;
             }
             if (fullNumbers.Count > 0)
             { InvokeLinesCompleteEvent(fullNumbers.Count); }

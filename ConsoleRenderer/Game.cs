@@ -28,7 +28,7 @@ namespace ConsoleRenderer
             ColourBase.BACKGROUND_RED | ColourBase.FOREGROUND_BLUE//,
 
         };
-        const int c_SizeX = 24;
+        const int c_SizeX = 16;//24
         const int c_SizeY = 30;
 
         static Board s_Board;
@@ -57,7 +57,7 @@ namespace ConsoleRenderer
             int[] frequencies = { 523, 659, 783, 659, 698, 783 };
             for (int i = 0; i < frequencies.Length; ++i)
             {
-                Console.Beep(frequencies[i], 50); 
+                Console.Beep(frequencies[i], 20); 
             }
         }
 
@@ -120,7 +120,7 @@ namespace ConsoleRenderer
         {
 
             Console.SetCursorPosition(x, y);
-            BoardRenderer.DrawWindow(x-2, y-1, 12, 6, "NEXT", ConsoleColor.DarkGray, ConsoleColor.White);
+            BoardRenderer.DrawWindow(x-2, y-1, 12, 6, "NEXT", ConsoleColor.Black, ConsoleColor.White);
             Console.SetCursorPosition(x, y);
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.BackgroundColor = ConsoleColor.DarkRed;
@@ -193,27 +193,26 @@ namespace ConsoleRenderer
 
         private static void DrawStatsBoard(int x, int y, int score, int newGoal, int level)
         {
-            BoardRenderer.DrawWindow(x, y, 40, 17, "STATS", ConsoleColor.DarkRed, ConsoleColor.Black);
-           // DrawStatsBoard(58, 18, 20, 21, 3);
+            BoardRenderer.DrawWindow(x, y, 36, 6, "STATS", ConsoleColor.DarkRed, ConsoleColor.Black);
             x += 2;
             y += 2;
-            BoardRenderer.DrawWindow(x, y, 11, 4, "Level", ConsoleColor.DarkRed, ConsoleColor.Gray);
-            Console.SetCursorPosition(x + 4, y + 1);
+            BoardRenderer.DrawWindow(x, y-1, 11, 4, "Level", ConsoleColor.DarkRed, ConsoleColor.Gray);
+            Console.SetCursorPosition(x + 4, y );
             Console.Write("L " + level.ToString());
-            Console.SetCursorPosition(x + 4, y + 2);
+            Console.SetCursorPosition(x + 4, y + 1);
             Console.Write(m_ScoreManager.LevelProgressPercent.ToString() + " %");
             //Console.Write(level.ToString());
-            BoardRenderer.DrawWindow(x+13,  y, 23, 4, "Score", ConsoleColor.DarkRed, ConsoleColor.Gray);
-            Console.SetCursorPosition(x + 16, y + 1);
+            BoardRenderer.DrawWindow(x+12,  y-1, 20, 4, "Score", ConsoleColor.DarkRed, ConsoleColor.Gray);
+            Console.SetCursorPosition(x + 13, y);
             Console.Write(" Your: " + new string(' ',9 - score.ToString().Length) + score.ToString());
-            Console.SetCursorPosition(x + 16, y + 2);
-            Console.Write(" Next Lev: " + new string(' ', 5 - newGoal.ToString().Length) + newGoal.ToString());
+            Console.SetCursorPosition(x + 13, y + 1);
+            Console.Write(" Next Lv: " + new string(' ', 6 - newGoal.ToString().Length) + newGoal.ToString());
 
         }
 
         private static void OnKeyPressed(ConsoleKeyInfo key)
         {
-            if (key.Key == ConsoleKey.Enter)
+            if (key.Key == ConsoleKey.Spacebar)
             {
                 s_RequestedAction = ActionType.Rotate;
             }
@@ -241,22 +240,31 @@ namespace ConsoleRenderer
             s_Running = false;
         }
 
-        private static void OnLineCompleted(int lines)
+        private static void OnLinesCompleted(int lines)
         {
 
             m_ScoreManager.AddScore(lines);
             //Console.Beep(900 , 100);
         }
 
-        private static void OnDeletingLine()
+        private static void OnDeletingLine(bool completed)
         {
-            Thread t = new Thread(GenerateRowSound);
-            t.Start();
+            if (completed)
+            {
+                Thread t = new Thread(GenerateRowSound);
+                t.Start();
+            }
+            else
+            {
+               GeneratePutSound();
+               
+            }
         }
 
         private static void OnNextLevel(int level)
         {
             s_Board.SetDropRate(level);
+            s_Board.ClearCells();
         }
 
         /******************** Public Interface *******************/
@@ -283,7 +291,7 @@ namespace ConsoleRenderer
             s_Random = new Random();
             s_NextBlocks = new Queue<BlockType>();
 
-            Console.SetWindowSize(100, 30 + 5);
+            Console.SetWindowSize(78, 30 + 5);
 
             Console.BackgroundColor = ConsoleColor.DarkRed;
             Console.ForegroundColor = ConsoleColor.White;
@@ -298,7 +306,7 @@ namespace ConsoleRenderer
             Console.CursorVisible = false;
             InputEventGenerator.ev_KeyPressed += OnKeyPressed;
             InputEventGenerator.Start();
-            s_Board.Subscribe_OnLineCompleted(OnLineCompleted);
+            s_Board.Subscribe_OnLineCompleted(OnLinesCompleted);
             s_Board.Subscribe_OnDeletingLine(OnDeletingLine);
         }
 
@@ -313,7 +321,7 @@ namespace ConsoleRenderer
             s_Board.Reset();
             s_RequestedAction = ActionType.NoAction;
             s_NextBlocks.Clear();
-            s_Board.Subscribe_OnLineCompleted(OnLineCompleted);
+            s_Board.Subscribe_OnLineCompleted(OnLinesCompleted);
             s_Board.Subscribe_OnDeletingLine(OnDeletingLine);
         }
 
@@ -325,12 +333,14 @@ namespace ConsoleRenderer
             s_NextBlocks.Enqueue(GenerateRandomBlock());
             s_NextBlocks.Enqueue(GenerateRandomBlock());
             CreateBlock(blockID, s_NextBlocks.Dequeue(), out pivot);
-            int prevX = 70;
-            int prevY = 26;
+            int nextBlockWindowPosX = 53;
+            int nextBlockWindowPosY = 24;
+            int statsBoardPosX = 40;
+            int statsBoardPosY = 15;
             m_ScoreManager = new ScoreManager();
             m_ScoreManager.Subscribe_OnNextLevel(OnNextLevel);
-            DrawStatsBoard(56, 16, m_ScoreManager.CurrentScore, m_ScoreManager.m_NextLevelTreshold, m_ScoreManager.Level);
-            DrawNextBlockPreview(prevX, prevY, s_NextBlocks.Peek());
+            DrawStatsBoard(statsBoardPosX, statsBoardPosY, m_ScoreManager.CurrentScore, m_ScoreManager.m_NextLevelTreshold, m_ScoreManager.Level);
+            DrawNextBlockPreview(nextBlockWindowPosX, nextBlockWindowPosY, s_NextBlocks.Peek());
             while (s_Running)
             {
                 BoardRenderer.DrawFrame(s_Board.Cells);
@@ -347,8 +357,8 @@ namespace ConsoleRenderer
                     {
                         OnGameOver();   
                     }
-                    DrawStatsBoard(56, 16, m_ScoreManager.CurrentScore, m_ScoreManager.m_NextLevelTreshold, m_ScoreManager.Level);
-                    DrawNextBlockPreview(prevX, prevY, s_NextBlocks.Peek());
+                    DrawStatsBoard(statsBoardPosX, statsBoardPosY, m_ScoreManager.CurrentScore, m_ScoreManager.m_NextLevelTreshold, m_ScoreManager.Level);
+                    DrawNextBlockPreview(nextBlockWindowPosX, nextBlockWindowPosY, s_NextBlocks.Peek());
                 }
 
 
@@ -378,8 +388,8 @@ namespace ConsoleRenderer
                         {
                             OnGameOver();
                         }
-                        DrawStatsBoard(56, 16, m_ScoreManager.CurrentScore, m_ScoreManager.m_NextLevelTreshold, m_ScoreManager.Level);
-                        DrawNextBlockPreview(prevX, prevY, s_NextBlocks.Peek());
+                        DrawStatsBoard(statsBoardPosX, statsBoardPosY, m_ScoreManager.CurrentScore, m_ScoreManager.m_NextLevelTreshold, m_ScoreManager.Level);
+                        DrawNextBlockPreview(nextBlockWindowPosX, nextBlockWindowPosY, s_NextBlocks.Peek());
 
                     }
                    

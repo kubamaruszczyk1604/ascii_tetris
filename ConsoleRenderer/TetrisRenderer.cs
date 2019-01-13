@@ -25,7 +25,6 @@ namespace ConsoleRenderer
         public static void DrawFrame(List<Cell> activeCells)
         {
             Console.SetCursorPosition(0, 0);
-            //Buffer.Clear();
             Buffer.Clear();
             foreach (Cell c in activeCells)
             {

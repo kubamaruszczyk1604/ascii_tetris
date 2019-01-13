@@ -47,9 +47,9 @@ namespace ConsoleRenderer
                 Console.CursorVisible = false;
                 if (screenStr[i] == 'W')
                 {
-                    Console.Write(' ');//replace control char with space
-                    i++;
+                    i++; //If possible control character found - advance by one
                     string numStr = string.Empty;
+                    //Get numbers that follow the control character
                     while (char.IsNumber(screenStr[i]))
                     {
                         numStr += screenStr[i];
@@ -57,18 +57,27 @@ namespace ConsoleRenderer
                         i++;
                         if (i >= screenStr.Length) break;
                     }
+                    //if no numbers follow it wasn't really the control character, just ordinary letter..
+                    if (numStr == string.Empty)
+                    {
+                        Console.Write('W');//Write original letter
+                    }
+                    else //in case it was the control character..
+                    {
+                        Console.Write(' ');//replace control char with space
+                        Thread.Sleep(int.Parse(numStr));
+                    }
 
-                    Thread.Sleep(int.Parse(numStr));
                     continue;
                 }
-                if (screenStr[i] == 'S')
+                if (screenStr[i] == '^') //Enable scanline animation
                 {
                     Console.Write(' ');//replace control char with space
                     i++;
                     scanlineStyle = true;
                     continue;
                 }
-                if (screenStr[i] == 'O')
+                if (screenStr[i] == '!')//Disable scanile animation
                 {
                     Console.Write(' ');//replace control char with space
                     i++;
@@ -76,7 +85,6 @@ namespace ConsoleRenderer
                 }
                 if (screenStr[i] == 'C')
                 {
-                    Console.Write(' ');//replace control char with space
                     i++;
                     string numStr = string.Empty;
                     while (char.IsNumber(screenStr[i]))
@@ -86,8 +94,16 @@ namespace ConsoleRenderer
                         i++;
                         if (i >= screenStr.Length) break;
                     }
-                    currentCol = int.Parse(numStr);
-                    Console.ForegroundColor = GetConsoleColor(currentCol);
+                    if (numStr == string.Empty)
+                    {
+                        Console.Write('C');
+                    }
+                    else
+                    {
+                        Console.Write(' ');//replace control char with space
+                        currentCol = int.Parse(numStr);
+                        Console.ForegroundColor = GetConsoleColor(currentCol);
+                    }
 
                     continue;
                 }
