@@ -275,7 +275,7 @@ namespace ConsoleRenderer
             Console.BackgroundColor = ConsoleColor.DarkRed;
             Console.ForegroundColor = ConsoleColor.White;
             Console.Clear();
-            string s = ASCIIEffects.LoadAsString(@"C:\Users\Kuba\Desktop\ac.txt");
+            string s = ASCIIEffects.LoadAsString(@"Assets\Intro.txt");
             ASCIIEffects.DisplayScreen(s);
 
             //string [] s = ASCIIEffects.LoadAsStringArray(@"C:\Users\Kuba\Desktop\ac.txt");
@@ -299,7 +299,7 @@ namespace ConsoleRenderer
            
             Console.BackgroundColor = ConsoleColor.DarkRed;
             Console.ForegroundColor = ConsoleColor.White;
-            string s = ASCIIEffects.LoadAsString(@"C:\Users\Kuba\Desktop\at.txt");
+            string s = ASCIIEffects.LoadAsString(@"Assets\Gameon.txt");
             ASCIIEffects.DisplayScreen(s);
             BoardRenderer.Initialize(4, 2, c_SizeX * 2, c_SizeY + 1);
            // 
