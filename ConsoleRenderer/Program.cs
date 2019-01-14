@@ -32,12 +32,14 @@ namespace ConsoleRenderer
         static void Main(string[] args)
         {
             //Strings.ShiftXStrings(10);
-            Game.ShowIntroScreen();
+            
 
             DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), SC_MINIMIZE, MF_BYCOMMAND);
             DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), SC_SIZE, MF_BYCOMMAND);
             DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), SC_MAXIMIZE, MF_BYCOMMAND);
+            Game.ShowIntroScreen();
             Game.InitializeGame();
+            
             Game.Run();
             Game.ShutDown();
 

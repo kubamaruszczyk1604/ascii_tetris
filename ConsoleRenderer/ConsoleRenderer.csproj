@@ -62,19 +62,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ASCIIEffects.cs" />
+    <Compile Include="Engine\ASCIIEffects.cs" />
     <Compile Include="Board.cs" />
-    <Compile Include="Buffer.cs" />
+    <Compile Include="Engine\Buffer.cs" />
     <Compile Include="Cell.cs" />
-    <Compile Include="ColourBase.cs" />
-    <Compile Include="FrameTimer.cs" />
+    <Compile Include="Engine\ColourBase.cs" />
+    <Compile Include="Engine\FrameTimer.cs" />
     <Compile Include="Game.cs" />
-    <Compile Include="Helper.cs" />
-    <Compile Include="InputEventGenerator.cs" />
-    <Compile Include="Material.cs" />
+    <Compile Include="Engine\Helper.cs" />
+    <Compile Include="Engine\InputEventGenerator.cs" />
+    <Compile Include="Engine\Material.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RayMarcher.cs" />
+    <Compile Include="Engine\RayMarcher.cs" />
     <Compile Include="ScoreManager.cs" />
     <Compile Include="Strings.cs" />
     <Compile Include="TetrisRenderer.cs" />

@@ -29,7 +29,7 @@ namespace ConsoleRenderer
 
         };
         const int c_SizeX = 16;//24
-        const int c_SizeY = 30;
+        const int c_SizeY = 26;
 
         static Board s_Board;
         static ActionType s_RequestedAction = ActionType.NoAction;
@@ -118,95 +118,100 @@ namespace ConsoleRenderer
 
         private static void DrawNextBlockPreview(int x, int y, BlockType type)
         {
+            lock (ConsoleWriterLock)
+            {
+                Console.SetCursorPosition(x, y);
+                BoardRenderer.DrawWindow(x - 2, y - 1, 12, 6, "NEXT", ConsoleColor.Black, ConsoleColor.White);
+                Console.SetCursorPosition(x, y);
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.BackgroundColor = ConsoleColor.DarkRed;
+                if (type == BlockType.Long)
+                {
+                    Console.SetCursorPosition(x, y + 1);
+                    Console.Write("▒▒▒▒▒▒▒▒");
+                }
+                else if (type == BlockType.LShapedR)
+                {
+                    y += 1;
+                    Console.SetCursorPosition(x + 2, y);
+                    Console.WriteLine("▒▒");
+                    Console.SetCursorPosition(x + 2, y + 1);
+                    Console.WriteLine("▒▒");
+                    Console.SetCursorPosition(x + 2, y + 2);
+                    Console.WriteLine("▒▒▒▒");
 
-            Console.SetCursorPosition(x, y);
-            BoardRenderer.DrawWindow(x-2, y-1, 12, 6, "NEXT", ConsoleColor.Black, ConsoleColor.White);
-            Console.SetCursorPosition(x, y);
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.BackgroundColor = ConsoleColor.DarkRed;
-            if (type == BlockType.Long)
-            {
-                Console.SetCursorPosition(x, y + 1);
-                Console.Write("▒▒▒▒▒▒▒▒");
-            }
-            else if (type == BlockType.LShapedR)
-            {
-                y += 1;
-                Console.SetCursorPosition(x + 2, y);
-                Console.WriteLine("▒▒");
-                Console.SetCursorPosition(x + 2, y + 1);
-                Console.WriteLine("▒▒");
-                Console.SetCursorPosition(x + 2, y + 2);
-                Console.WriteLine("▒▒▒▒");
+                }
+                else if (type == BlockType.LShapedL)
+                {
+                    y += 1;
+                    Console.SetCursorPosition(x + 4, y);
+                    Console.WriteLine("▒▒");
+                    Console.SetCursorPosition(x + 4, y + 1);
+                    Console.WriteLine("▒▒");
+                    Console.SetCursorPosition(x + 2, y + 2);
+                    Console.WriteLine("▒▒▒▒");
+                    // char c = '▒';
+                    //byte cr = (byte)(c);
+                }
+                else if (type == BlockType.Piramid)
+                {
 
+                    Console.SetCursorPosition(x + 3, y + 1);
+                    Console.WriteLine("▒▒");
+                    Console.SetCursorPosition(x + 1, y + 2);
+                    Console.WriteLine("▒▒▒▒▒▒");
+                }
+                else if (type == BlockType.SShapedL)
+                {
+                    y += 1;
+                    Console.SetCursorPosition(x + 4, y);
+                    Console.WriteLine("▒▒");
+                    Console.SetCursorPosition(x + 2, y + 1);
+                    Console.WriteLine("▒▒▒▒");
+                    Console.SetCursorPosition(x + 2, y + 2);
+                    Console.WriteLine("▒▒");
+                }
+                else if (type == BlockType.SShapedR)
+                {
+                    y += 1;
+                    Console.SetCursorPosition(x + 2, y);
+                    Console.WriteLine("▒▒");
+                    Console.SetCursorPosition(x + 2, y + 1);
+                    Console.WriteLine("▒▒▒▒");
+                    Console.SetCursorPosition(x + 4, y + 2);
+                    Console.WriteLine("▒▒");
+                }
+                else if (type == BlockType.Square)
+                {
+                    Console.SetCursorPosition(x + 2, y + 1);
+                    Console.WriteLine("▒▒▒▒");
+                    Console.SetCursorPosition(x + 2, y + 2);
+                    Console.WriteLine("▒▒▒▒");
+                }
+                Console.BackgroundColor = ConsoleColor.DarkRed;
+                Console.ForegroundColor = ConsoleColor.Red;
             }
-            else if (type == BlockType.LShapedL)
-            {
-                y += 1;
-                Console.SetCursorPosition(x + 4, y);
-                Console.WriteLine("▒▒");
-                Console.SetCursorPosition(x + 4, y + 1);
-                Console.WriteLine("▒▒");
-                Console.SetCursorPosition(x + 2, y + 2);
-                Console.WriteLine("▒▒▒▒");
-               // char c = '▒';
-                //byte cr = (byte)(c);
-            }
-            else if (type == BlockType.Piramid)
-            {
-
-                Console.SetCursorPosition(x + 3, y + 1);
-                Console.WriteLine("▒▒");
-                Console.SetCursorPosition(x + 1, y + 2);
-                Console.WriteLine("▒▒▒▒▒▒");
-            }
-            else if (type == BlockType.SShapedL)
-            {
-                y += 1;
-                Console.SetCursorPosition(x + 4, y);
-                Console.WriteLine("▒▒");
-                Console.SetCursorPosition(x + 2, y + 1);
-                Console.WriteLine("▒▒▒▒");
-                Console.SetCursorPosition(x + 2, y + 2);
-                Console.WriteLine("▒▒");
-            }
-            else if (type == BlockType.SShapedR)
-            {
-                y += 1;
-                Console.SetCursorPosition(x + 2, y);
-                Console.WriteLine("▒▒");
-                Console.SetCursorPosition(x + 2, y + 1);
-                Console.WriteLine("▒▒▒▒");
-                Console.SetCursorPosition(x + 4, y + 2);
-                Console.WriteLine("▒▒");
-            }
-            else if (type == BlockType.Square)
-            {
-                Console.SetCursorPosition(x + 2, y + 1);
-                Console.WriteLine("▒▒▒▒");
-                Console.SetCursorPosition(x + 2, y + 2);
-                Console.WriteLine("▒▒▒▒");
-            }
-            Console.BackgroundColor = ConsoleColor.DarkRed;
-            Console.ForegroundColor = ConsoleColor.Red;
         }
-
+        private static readonly object ConsoleWriterLock = new object();
         private static void DrawStatsBoard(int x, int y, int score, int newGoal, int level)
         {
-            BoardRenderer.DrawWindow(x, y, 36, 6, "STATS", ConsoleColor.DarkRed, ConsoleColor.Black);
-            x += 2;
-            y += 2;
-            BoardRenderer.DrawWindow(x, y-1, 11, 4, "Level", ConsoleColor.DarkRed, ConsoleColor.Gray);
-            Console.SetCursorPosition(x + 4, y );
-            Console.Write("L " + level.ToString());
-            Console.SetCursorPosition(x + 4, y + 1);
-            Console.Write(m_ScoreManager.LevelProgressPercent.ToString() + " %");
-            //Console.Write(level.ToString());
-            BoardRenderer.DrawWindow(x+12,  y-1, 20, 4, "Score", ConsoleColor.DarkRed, ConsoleColor.Gray);
-            Console.SetCursorPosition(x + 13, y);
-            Console.Write(" Your: " + new string(' ',9 - score.ToString().Length) + score.ToString());
-            Console.SetCursorPosition(x + 13, y + 1);
-            Console.Write(" Next Lv: " + new string(' ', 6 - newGoal.ToString().Length) + newGoal.ToString());
+            lock (ConsoleWriterLock)
+            {
+                BoardRenderer.DrawWindow(x, y, 36, 6, "STATS", ConsoleColor.DarkRed, ConsoleColor.Black);
+                x += 2;
+                y += 2;
+                BoardRenderer.DrawWindow(x, y - 1, 11, 4, "Level", ConsoleColor.DarkRed, ConsoleColor.Gray);
+                Console.SetCursorPosition(x + 4, y);
+                Console.Write("L " + level.ToString());
+                Console.SetCursorPosition(x + 4, y + 1);
+                Console.Write(m_ScoreManager.LevelProgressPercent.ToString() + " %");
+                //Console.Write(level.ToString());
+                BoardRenderer.DrawWindow(x + 12, y - 1, 20, 4, "Score", ConsoleColor.DarkRed, ConsoleColor.Gray);
+                Console.SetCursorPosition(x + 13, y);
+                Console.Write(" Your: " + new string(' ', 9 - score.ToString().Length) + score.ToString());
+                Console.SetCursorPosition(x + 13, y + 1);
+                Console.Write(" RTNL: " + new string(' ', 9 - newGoal.ToString().Length) + newGoal.ToString());
+            }
 
         }
 
@@ -256,7 +261,8 @@ namespace ConsoleRenderer
             }
             else
             {
-               GeneratePutSound();
+               new Thread(() => GeneratePutSound()).Start();
+               Thread.Sleep(110);
                
             }
         }
@@ -291,16 +297,19 @@ namespace ConsoleRenderer
             s_Random = new Random();
             s_NextBlocks = new Queue<BlockType>();
 
-            Console.SetWindowSize(78, 30 + 5);
-
+            Console.SetWindowSize(78, 26 + 5);
+            
             Console.BackgroundColor = ConsoleColor.DarkRed;
             Console.ForegroundColor = ConsoleColor.White;
+            //Console.BufferWidth = Console.WindowWidth;
+            //Console.BufferHeight = Console.WindowHeight;
             Console.Clear();
            
             Console.BackgroundColor = ConsoleColor.DarkRed;
             Console.ForegroundColor = ConsoleColor.White;
             string s = ASCIIEffects.LoadAsString(@"Assets\Gameon.txt");
             ASCIIEffects.DisplayScreen(s);
+            
             BoardRenderer.Initialize(4, 2, c_SizeX * 2, c_SizeY + 1);
            // 
             Console.CursorVisible = false;
@@ -327,6 +336,7 @@ namespace ConsoleRenderer
 
         public static void Run()
         {
+            
             s_Running = true;
             int blockID = 1;
             Cell pivot = null;
@@ -334,12 +344,12 @@ namespace ConsoleRenderer
             s_NextBlocks.Enqueue(GenerateRandomBlock());
             CreateBlock(blockID, s_NextBlocks.Dequeue(), out pivot);
             int nextBlockWindowPosX = 53;
-            int nextBlockWindowPosY = 24;
+            int nextBlockWindowPosY = 23;
             int statsBoardPosX = 40;
-            int statsBoardPosY = 15;
+            int statsBoardPosY = 14;
             m_ScoreManager = new ScoreManager();
             m_ScoreManager.Subscribe_OnNextLevel(OnNextLevel);
-            DrawStatsBoard(statsBoardPosX, statsBoardPosY, m_ScoreManager.CurrentScore, m_ScoreManager.m_NextLevelTreshold, m_ScoreManager.Level);
+            DrawStatsBoard(statsBoardPosX, statsBoardPosY, m_ScoreManager.CurrentScore, m_ScoreManager.RemainingToNextLevel, m_ScoreManager.Level);
             DrawNextBlockPreview(nextBlockWindowPosX, nextBlockWindowPosY, s_NextBlocks.Peek());
             while (s_Running)
             {
@@ -357,7 +367,7 @@ namespace ConsoleRenderer
                     {
                         OnGameOver();   
                     }
-                    DrawStatsBoard(statsBoardPosX, statsBoardPosY, m_ScoreManager.CurrentScore, m_ScoreManager.m_NextLevelTreshold, m_ScoreManager.Level);
+                    DrawStatsBoard(statsBoardPosX, statsBoardPosY, m_ScoreManager.CurrentScore, m_ScoreManager.RemainingToNextLevel, m_ScoreManager.Level);
                     DrawNextBlockPreview(nextBlockWindowPosX, nextBlockWindowPosY, s_NextBlocks.Peek());
                 }
 
@@ -388,7 +398,7 @@ namespace ConsoleRenderer
                         {
                             OnGameOver();
                         }
-                        DrawStatsBoard(statsBoardPosX, statsBoardPosY, m_ScoreManager.CurrentScore, m_ScoreManager.m_NextLevelTreshold, m_ScoreManager.Level);
+                        DrawStatsBoard(statsBoardPosX, statsBoardPosY, m_ScoreManager.CurrentScore, m_ScoreManager.RemainingToNextLevel, m_ScoreManager.Level);
                         DrawNextBlockPreview(nextBlockWindowPosX, nextBlockWindowPosY, s_NextBlocks.Peek());
 
                     }

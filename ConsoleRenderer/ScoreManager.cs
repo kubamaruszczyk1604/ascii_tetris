@@ -26,6 +26,7 @@ namespace ConsoleRenderer
         public int Level { get { return m_Level; } }
         public float LevelProgress { get { return (float)(m_CurrentLevelScore) / (float)(m_NextLevelTreshold); } }
         public int LevelProgressPercent { get { return (int)((float)(m_CurrentLevelScore) / (float)(m_NextLevelTreshold)*100.0f); } }
+        public int RemainingToNextLevel { get { return m_NextLevelTreshold - m_CurrentLevelScore; } }
 
         public ScoreManager()
         {
@@ -39,7 +40,7 @@ namespace ConsoleRenderer
             m_Score = 0;
             m_CurrentLevelScore = 0;
             m_Level = 1;
-            m_NextLevelTreshold = 100;
+            m_NextLevelTreshold = 1000;
         }
 
         public int AddScore(int lines)
@@ -50,7 +51,7 @@ namespace ConsoleRenderer
             {
                 m_CurrentLevelScore = 0;
                 m_Level++;
-                m_NextLevelTreshold += 100 * m_Level;
+                m_NextLevelTreshold = 1000 + 50 * m_Level;
                 //if (m_CurrentLevelScore >= m_NextLevelTreshold) throw new Exception("jeb");
                 InvokeOnNextLevel(m_Level);
             }

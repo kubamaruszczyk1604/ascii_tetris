@@ -44,8 +44,11 @@ namespace ConsoleRenderer
                     int l = m_Cells.RemoveAll(o => o.Y == rowNo );
 
                     if (l > 0)
-                        // BoardRenderer.DrawFrame(Cells,strLut[counter]);
+                    // BoardRenderer.DrawFrame(Cells,strLut[counter]);
+                    {
                         BoardRenderer.DrawFrame(Cells);
+                        
+                    }
                 }
             }
             //m_Cells.RemoveAll(o => o.Y == rowNo);
@@ -209,7 +212,7 @@ namespace ConsoleRenderer
 
         public void SetDropRate(int level)
         {
-            m_DropRate = 0.5f - (level * 0.05f);
+            m_DropRate = 0.5f - (float)Math.Pow(level * 0.05f,1.1);
             if (m_DropRate < 0) m_DropRate = 0;
             //m_DropRate = 1.0f/level * 0.5f;
         }

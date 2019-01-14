@@ -205,7 +205,7 @@ namespace ConsoleRenderer
 
 
 
-        // Marching baby
+        // Marching 
         private float CalculateShortestDistance(ref Ray ray, float start, float end, out int hitIndex)
         {
             float depth = start;
