@@ -33,6 +33,7 @@ namespace ConsoleRenderer
 
         static Board s_Board;
         static ActionType s_RequestedAction = ActionType.NoAction;
+        private static readonly object ConsoleWriterLock = new object();
         static Random s_Random;
         static bool s_Running = false;
         static Queue<BlockType> s_NextBlocks;
@@ -192,7 +193,7 @@ namespace ConsoleRenderer
                 Console.ForegroundColor = ConsoleColor.Red;
             }
         }
-        private static readonly object ConsoleWriterLock = new object();
+
         private static void DrawStatsBoard(int x, int y, int score, int newGoal, int level)
         {
             lock (ConsoleWriterLock)
@@ -217,7 +218,7 @@ namespace ConsoleRenderer
 
         private static void OnKeyPressed(ConsoleKeyInfo key)
         {
-            if (key.Key == ConsoleKey.Spacebar)
+            if (key.Key == ConsoleKey.Spacebar || key.Key == ConsoleKey.Enter)
             {
                 s_RequestedAction = ActionType.Rotate;
             }

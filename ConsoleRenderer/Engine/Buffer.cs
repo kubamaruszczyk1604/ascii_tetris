@@ -150,6 +150,7 @@ namespace ConsoleRenderer
               AddSequentialy((char)176, 0x0007);
             }
         }
+     
         static public void DrawXY(char c, short color, int x, int y)
         {
             int index = m_sWidth * (y) + x;
@@ -158,6 +159,7 @@ namespace ConsoleRenderer
                 index = 0;
                 //throw new Exception("DLUGOSC JEST: " + index.ToString());
             }
+
             buf[index].Attributes = color;
             buf[index].Char.AsciiChar = (byte)c;
         }
@@ -172,5 +174,21 @@ namespace ConsoleRenderer
             m_sBuffPtr = 0;
         }
 
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct COLORREF
+    {
+        private uint ColorDWORD;
+
+        internal COLORREF(uint r, uint g, uint b)
+        {
+            ColorDWORD = r + (g << 8) + (b << 16);
+        }
+
+        public override string ToString()
+        {
+            return ColorDWORD.ToString();
+        }
     }
 }
