@@ -38,9 +38,14 @@ namespace ConsoleRenderer
             DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), SC_SIZE, MF_BYCOMMAND);
             DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), SC_MAXIMIZE, MF_BYCOMMAND);
             Game.ShowIntroScreen();
-            Game.InitializeGame();
-            
-            Game.Run();
+            //Game.InitializeGame();
+            do
+            {
+                Game.Run();
+
+            } while (Game.PlayAgain);
+
+            //Console.ReadLine();
             Game.ShutDown();
 
 

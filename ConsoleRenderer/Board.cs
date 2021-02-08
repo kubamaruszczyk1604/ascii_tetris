@@ -34,7 +34,7 @@ namespace ConsoleRenderer
 
                     if (l > 0)
                         // BoardRenderer.DrawFrame(Cells,strLut[counter]);
-                        BoardRenderer.DrawFrame(Cells);
+                        Renderer.DrawFrame(Cells);
                 }
             }
             else
@@ -46,7 +46,7 @@ namespace ConsoleRenderer
                     if (l > 0)
                     // BoardRenderer.DrawFrame(Cells,strLut[counter]);
                     {
-                        BoardRenderer.DrawFrame(Cells);
+                        Renderer.DrawFrame(Cells);
                         
                     }
                 }

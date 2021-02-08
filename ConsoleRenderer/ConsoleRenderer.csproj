@@ -100,7 +100,8 @@
   <PropertyGroup>
     <PreBuildEvent>md $(TargetDir)\Assets
 copy $(SolutionDir)Assets\Intro.txt $(TargetDir)\Assets
-copy $(SolutionDir)Assets\Gameon.txt $(TargetDir)\Assets</PreBuildEvent>
+copy $(SolutionDir)Assets\Gameon.txt $(TargetDir)\Assets
+copy $(SolutionDir)Assets\Gameover.txt $(TargetDir)\Assets</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>

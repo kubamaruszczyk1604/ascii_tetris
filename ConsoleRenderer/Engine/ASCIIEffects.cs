@@ -44,6 +44,7 @@ namespace ConsoleRenderer
             int currentCol = 15;
             while (true)
             {
+                if(Console.KeyAvailable) Console.ReadKey(false);
                 Console.CursorVisible = false;
                 if (screenStr[i] == 'W')
                 {
@@ -128,6 +129,16 @@ namespace ConsoleRenderer
 
                 if (y % 2 == 0) Console.WriteLine(strings[y]);
                 else Console.WriteLine();
+            }
+        }
+
+        static public void AnimatedText(string text,int x, int y, int timeInterval_ms)
+        {
+            Console.SetCursorPosition(x, y);
+            for(int i = 0; i < text.Length; ++i)
+            {
+                Console.Write(text[i]);
+                if(text[i] != ' ') Thread.Sleep(timeInterval_ms);
             }
         }
     }

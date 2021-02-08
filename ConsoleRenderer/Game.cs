@@ -7,7 +7,6 @@ using System.Threading;
 
 namespace ConsoleRenderer
 {
-    //htp://patorjk.com/software/taag/#p=display&f=Graffiti&t=Type%20Something%20
     enum BlockType
     {
         Long = 0, Square = 1, LShapedL = 2, LShapedR = 3,
@@ -19,27 +18,32 @@ namespace ConsoleRenderer
    
     class Game
     {
+        #region Private Variables
 
         static int[] COL_TABLE =
        {
             ColourBase.BACKGROUND_BLUE | ColourBase.FOREGROUND_RED,
-           ColourBase.BACKGROUND_BLUE, 
-           ColourBase.BACKGROUND_BLUE | ColourBase.FOREGROUND_BLUE,
+            ColourBase.BACKGROUND_BLUE, 
+            ColourBase.BACKGROUND_BLUE | ColourBase.FOREGROUND_BLUE,
             ColourBase.BACKGROUND_RED | ColourBase.FOREGROUND_BLUE//,
 
         };
-        const int c_SizeX = 16;//24
-        const int c_SizeY = 26;
+        private const int c_SizeX = 16;//24
+        private const int c_SizeY = 26;
 
-        static Board s_Board;
-        static ActionType s_RequestedAction = ActionType.NoAction;
+        private static Board s_Board;
+        private static ActionType s_RequestedAction = ActionType.NoAction;
         private static readonly object ConsoleWriterLock = new object();
-        static Random s_Random;
-        static bool s_Running = false;
-        static Queue<BlockType> s_NextBlocks;
-        static ScoreManager m_ScoreManager;
+        private static Random s_Random;
+        private static bool s_Running = false;
+        private static Queue<BlockType> s_NextBlocks;
+        private static ScoreManager s_ScoreManager;
 
-        /******************** Private Methods *******************/
+        #endregion
+
+
+        #region Private methods
+
 
         private static int GenRandomColour()
         {
@@ -53,12 +57,24 @@ namespace ConsoleRenderer
 
         private static void GenerateRowSound()
         {
-            //int[] frequencies = { 523, 587, 659, 698, 783 };
             //in C major scale
             int[] frequencies = { 523, 659, 783, 659, 698, 783 };
             for (int i = 0; i < frequencies.Length; ++i)
             {
-                Console.Beep(frequencies[i], 20); 
+                Console.Beep(frequencies[i], 15); 
+            }
+        }
+
+        private static void GenerateGameOverSound()
+        {
+            //G#,A,G#,G,F#,F,F#
+            int[] frequencies = { 415, 440, 415, 392, 370, 349, 369 };
+            int[] times = { 6, 77, 77, 77, 100, 980, 700 };
+            //Array.Reverse(frequencies);
+            for (int i = 0; i < frequencies.Length; ++i)
+            {
+                Console.Beep(frequencies[i]-50,times[i]);
+               //if(i < 6) Console.Beep(frequencies[i]/2, 1+ times[i]*2/3);
             }
         }
 
@@ -122,7 +138,7 @@ namespace ConsoleRenderer
             lock (ConsoleWriterLock)
             {
                 Console.SetCursorPosition(x, y);
-                BoardRenderer.DrawWindow(x - 2, y - 1, 12, 6, "NEXT", ConsoleColor.Black, ConsoleColor.White);
+                Renderer.DrawWindow(x - 2, y - 1, 12, 6, "NEXT", ConsoleColor.Black, ConsoleColor.White);
                 Console.SetCursorPosition(x, y);
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Console.BackgroundColor = ConsoleColor.DarkRed;
@@ -198,16 +214,16 @@ namespace ConsoleRenderer
         {
             lock (ConsoleWriterLock)
             {
-                BoardRenderer.DrawWindow(x, y, 36, 6, "STATS", ConsoleColor.DarkRed, ConsoleColor.Black);
+                Renderer.DrawWindow(x, y, 36, 6, "STATS", ConsoleColor.Black, ConsoleColor.White);
                 x += 2;
                 y += 2;
-                BoardRenderer.DrawWindow(x, y - 1, 11, 4, "Level", ConsoleColor.DarkRed, ConsoleColor.Gray);
+                Renderer.DrawWindow(x, y - 1, 11, 4, "Level", ConsoleColor.Blue, ConsoleColor.Gray);
                 Console.SetCursorPosition(x + 4, y);
                 Console.Write("L " + level.ToString());
                 Console.SetCursorPosition(x + 4, y + 1);
-                Console.Write(m_ScoreManager.LevelProgressPercent.ToString() + " %");
+                Console.Write(s_ScoreManager.LevelProgressPercent.ToString() + " %");
                 //Console.Write(level.ToString());
-                BoardRenderer.DrawWindow(x + 12, y - 1, 20, 4, "Score", ConsoleColor.DarkRed, ConsoleColor.Gray);
+                Renderer.DrawWindow(x + 12, y - 1, 20, 4, "Score", ConsoleColor.DarkMagenta, ConsoleColor.White);
                 Console.SetCursorPosition(x + 13, y);
                 Console.Write(" Your: " + new string(' ', 9 - score.ToString().Length) + score.ToString());
                 Console.SetCursorPosition(x + 13, y + 1);
@@ -241,15 +257,65 @@ namespace ConsoleRenderer
             return (BlockType)s_Random.Next(0, 7); 
         }
 
-        private static void OnGameOver()
+        private static bool OnGameOver()
         {
-            s_Running = false;
+            //Thread.Sleep(500);
+            Console.SetCursorPosition(0, 0);
+            GenerateGameOverSound();
+            Console.Clear();
+            
+
+            string summary = "SCORE: " + s_ScoreManager.CurrentScore.ToString() + "  LEVEL: " + s_ScoreManager.Level.ToString();
+            
+
+            Console.SetCursorPosition(0, 0);
+            string s = ASCIIEffects.LoadAsString(@"Assets\Gameover.txt");
+            
+            lock (ConsoleWriterLock)
+            {
+                ASCIIEffects.DisplayScreen(s);
+                Console.ForegroundColor = ConsoleColor.White;
+                ASCIIEffects.AnimatedText(summary, 30, 18, 60);
+               
+            }
+
+            bool playAgain = true;
+            ConsoleColor bkCol = ConsoleColor.Black;
+            ConsoleColor highlightCol = ConsoleColor.Blue;
+            while (true)
+            {
+                Renderer.DrawWindow(15, 22, 50, 7, "PLAY AGAIN?", bkCol, ConsoleColor.White);
+                Console.SetCursorPosition(30, 24);
+                if (playAgain) Console.BackgroundColor = highlightCol;
+                Console.Write("   YES - PLAY AGAIN   ");
+
+                Console.BackgroundColor = bkCol;
+
+                Console.SetCursorPosition(30, 25);
+                if (!playAgain) Console.BackgroundColor = highlightCol;
+                Console.Write("      NO - QUIT       ");
+                Console.BackgroundColor = bkCol;
+                var consoleKeyInfo = Console.ReadKey();
+                Console.SetCursorPosition(0, 0);
+                if (consoleKeyInfo.Key == ConsoleKey.UpArrow)
+                {
+                    playAgain = true;
+                }
+                else if (consoleKeyInfo.Key == ConsoleKey.DownArrow)
+                {
+                    playAgain = false;
+                }
+                if(consoleKeyInfo.Key == ConsoleKey.Enter)
+                {
+                    return playAgain;
+                }
+            }
         }
 
         private static void OnLinesCompleted(int lines)
         {
 
-            m_ScoreManager.AddScore(lines);
+            s_ScoreManager.AddScore(lines);
             //Console.Beep(900 , 100);
         }
 
@@ -273,11 +339,16 @@ namespace ConsoleRenderer
             s_Board.SetDropRate(level);
             s_Board.ClearCells();
         }
+        #endregion
 
-        /******************** Public Interface *******************/
+        /******************** Public  *******************/
+    
+        public static bool PlayAgain { get; private set; }
+
 
         public static void ShowIntroScreen()
         {
+            //GenerateGameOverSound();
             Console.SetWindowSize(144, 30 + 4);
             Console.BackgroundColor = ConsoleColor.DarkRed;
             Console.ForegroundColor = ConsoleColor.White;
@@ -285,20 +356,18 @@ namespace ConsoleRenderer
             string s = ASCIIEffects.LoadAsString(@"Assets\Intro.txt");
             ASCIIEffects.DisplayScreen(s);
 
-            //string [] s = ASCIIEffects.LoadAsStringArray(@"C:\Users\Kuba\Desktop\ac.txt");
-            //ASCIIEffects.Animate(s,144, 34);
-
             Console.ReadKey();
             Console.Clear();
         }
 
-        public static void InitializeGame()
+       private static void InitializeGame()
         {
+            PlayAgain = true;
             s_Board = new Board(c_SizeX, c_SizeY);
             s_Random = new Random();
             s_NextBlocks = new Queue<BlockType>();
 
-            Console.SetWindowSize(78, 26 + 5);
+            Console.SetWindowSize(79, 26 + 6);
             
             Console.BackgroundColor = ConsoleColor.DarkRed;
             Console.ForegroundColor = ConsoleColor.White;
@@ -311,7 +380,7 @@ namespace ConsoleRenderer
             string s = ASCIIEffects.LoadAsString(@"Assets\Gameon.txt");
             ASCIIEffects.DisplayScreen(s);
             
-            BoardRenderer.Initialize(4, 2, c_SizeX * 2, c_SizeY + 1);
+            Renderer.Initialize(4, 2, c_SizeX * 2, c_SizeY + 1);
            // 
             Console.CursorVisible = false;
             InputEventGenerator.ev_KeyPressed += OnKeyPressed;
@@ -337,7 +406,8 @@ namespace ConsoleRenderer
 
         public static void Run()
         {
-            
+            InitializeGame();
+            bool gameOver = false;
             s_Running = true;
             int blockID = 1;
             Cell pivot = null;
@@ -348,13 +418,13 @@ namespace ConsoleRenderer
             int nextBlockWindowPosY = 23;
             int statsBoardPosX = 40;
             int statsBoardPosY = 14;
-            m_ScoreManager = new ScoreManager();
-            m_ScoreManager.Subscribe_OnNextLevel(OnNextLevel);
-            DrawStatsBoard(statsBoardPosX, statsBoardPosY, m_ScoreManager.CurrentScore, m_ScoreManager.RemainingToNextLevel, m_ScoreManager.Level);
+            s_ScoreManager = new ScoreManager();
+            s_ScoreManager.Subscribe_OnNextLevel(OnNextLevel);
+            DrawStatsBoard(statsBoardPosX, statsBoardPosY, s_ScoreManager.CurrentScore, s_ScoreManager.RemainingToNextLevel, s_ScoreManager.Level);
             DrawNextBlockPreview(nextBlockWindowPosX, nextBlockWindowPosY, s_NextBlocks.Peek());
-            while (s_Running)
+            while (s_Running && !gameOver)
             {
-                BoardRenderer.DrawFrame(s_Board.Cells);
+                Renderer.DrawFrame(s_Board.Cells);
                 // BoardRenderer.DrawDebug(s_Board.States);
                 if (!s_Board.MoveCurrentBlockDown())
                 {
@@ -366,9 +436,10 @@ namespace ConsoleRenderer
                     blockID++;
                     if(!CreateBlock(blockID, nextBlock, out pivot))
                     {
-                        OnGameOver();   
+                        s_Running = false;
+                        gameOver = true;   
                     }
-                    DrawStatsBoard(statsBoardPosX, statsBoardPosY, m_ScoreManager.CurrentScore, m_ScoreManager.RemainingToNextLevel, m_ScoreManager.Level);
+                    DrawStatsBoard(statsBoardPosX, statsBoardPosY, s_ScoreManager.CurrentScore, s_ScoreManager.RemainingToNextLevel, s_ScoreManager.Level);
                     DrawNextBlockPreview(nextBlockWindowPosX, nextBlockWindowPosY, s_NextBlocks.Peek());
                 }
 
@@ -397,11 +468,11 @@ namespace ConsoleRenderer
                         blockID++;
                         if (!CreateBlock(blockID, nextBlock, out pivot))
                         {
-                            OnGameOver();
+                            s_Running = false;
+                            gameOver = true;
                         }
-                        DrawStatsBoard(statsBoardPosX, statsBoardPosY, m_ScoreManager.CurrentScore, m_ScoreManager.RemainingToNextLevel, m_ScoreManager.Level);
+                        DrawStatsBoard(statsBoardPosX, statsBoardPosY, s_ScoreManager.CurrentScore, s_ScoreManager.RemainingToNextLevel, s_ScoreManager.Level);
                         DrawNextBlockPreview(nextBlockWindowPosX, nextBlockWindowPosY, s_NextBlocks.Peek());
-
                     }
                    
                 }
@@ -409,6 +480,12 @@ namespace ConsoleRenderer
                 s_RequestedAction = ActionType.NoAction;
   
             }
+            if(gameOver)
+            {
+                
+                PlayAgain = OnGameOver();
+            }
+
 
         }
     }

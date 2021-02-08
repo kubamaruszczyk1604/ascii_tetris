@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace ConsoleRenderer
 {
-    class BoardRenderer
+    class Renderer
     {
 
         static int[] SINGLE = { 0, 1, 1, 1 };
