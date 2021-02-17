@@ -342,7 +342,7 @@ namespace ConsoleRenderer
         #endregion
 
         /******************** Public  *******************/
-    
+
         public static bool PlayAgain { get; private set; }
 
 
