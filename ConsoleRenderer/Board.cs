@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ConsoleRenderer
 {
-    class Board
+    class Board //TO jest experymentalny komentarz
     {
         public delegate void OnLinesCompleted(int lineCount);
         private OnLinesCompleted m_OnLinesCompleted;
